@@ -1,0 +1,58 @@
+services:
+  notification-service-dapr:
+    image: "daprio/daprd:1.14.4"
+    container_name: notification-service-dapr
+    command: [
+      "./daprd",
+      "--app-id", "notification-service",
+      "--app-port", "8083",
+      "--dapr-http-port", "3503",
+      "--dapr-grpc-port", "50001",
+      "--components-path", "/components"  # Moved here from healthcheck
+    ]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3503/v1.0/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    volumes:
+      - "./components:/components"
+    ports:
+      - "50001:50001"
+      - "3503:3503"
+    networks:
+      - mongodbnetwork
+
+  notification-service:
+    image: notification-service:v1.0
+    container_name: notification-service
+    environment:
+      - DAPR_GRPC_PORT=50001
+      - DAPR_HOST=notification-service-dapr
+    ports:
+      - "8082:8082"
+    networks:
+      - mongodbnetwork
+    depends_on:
+      - notification-service-dapr
+    restart: unless-stopped
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    networks:
+      - mongodbnetwork
+
+  placement:
+    image: "daprio/dapr:1.14.4"
+    command: ["./placement", "-port", "50005"]
+    ports:
+      - "50005:50005"
+    networks:
+      - mongodbnetwork
+
+networks:
+  mongodbnetwork:
+    external: true

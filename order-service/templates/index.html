@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-container, .orders-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .order-items {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .remove-item {
+            background-color: #ff4444;
+        }
+
+        .remove-item:hover {
+            background-color: #cc0000;
+        }
+
+        .order {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .status-shipped {
+            background-color: #2196F3;
+        }
+
+        .status-delivered {
+            background-color: #4CAF50;
+        }
+
+        .status-cancelled {
+            background-color: #f44336;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Management System</h1>
+        <div id="messageArea"></div>
+        
+        <div class="form-container">
+            <h2>Create New Order</h2>
+            <form id="createOrderForm">
+                <div class="form-group">
+                    <label for="customer_id">Customer ID:</label>
+                    <input type="text" id="customer_id" name="customer_id" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="payment_method">Payment Method:</label>
+                    <select id="payment_method" name="payment_method" required>
+                        <option value="">Select Payment Method</option>
+                        <option value="credit_card">Credit Card</option>
+                        <option value="debit_card">Debit Card</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <h3>Order Items</h3>
+                    <div id="orderItems" class="order-items">
+                        <!-- Item rows will be added here -->
+                    </div>
+                    <button type="button" onclick="addItemRow()" class="add-item">Add Item</button>
+                </div>
+
+                <div class="form-group">
+                    <h3>Shipping Address</h3>
+                    <label for="street">Street:</label>
+                    <input type="text" id="street" name="street" required>
+
+                    <label for="city">City:</label>
+                    <input type="text" id="city" name="city" required>
+
+                    <label for="state">State:</label>
+                    <input type="text" id="state" name="state" required>
+
+                    <label for="postal_code">Postal Code:</label>
+                    <input type="text" id="postal_code" name="postal_code" required>
+
+                    <label for="country">Country:</label>
+                    <input type="text" id="country" name="country" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes:</label>
+                    <textarea id="notes" name="notes" rows="4"></textarea>
+                </div>
+
+                <button type="submit">Create Order</button>
+            </form>
+        </div>
+
+        <div class="orders-container">
+            <h2>Orders List</h2>
+            <button onclick="fetchOrders()">Refresh Orders</button>
+            <div id="ordersList"></div>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(message, isError = false) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="message ${isError ? 'error' : 'success'}">${message}</div>`;
+            setTimeout(() => messageArea.innerHTML = '', 5000);
+        }
+
+        function addItemRow() {
+            const itemsDiv = document.getElementById('orderItems');
+            const itemRow = document.createElement('div');
+            itemRow.className = 'item-row';
+            itemRow.innerHTML = `
+                <input type="text" placeholder="Product ID" required>
+                <input type="text" placeholder="Product Name" required>
+                <input type="number" placeholder="Quantity" min="1" required>
+                <input type="number" placeholder="Unit Price" min="0.01" step="0.01" required>
+                <button type="button" onclick="this.parentElement.remove()" class="remove-item">Remove</button>
+            `;
+            itemsDiv.appendChild(itemRow);
+        }
+
+        document.getElementById('createOrderForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const itemRows = document.querySelectorAll('.item-row');
+            if (itemRows.length === 0) {
+                showMessage('Please add at least one item to the order', true);
+                return;
+            }
+
+            const items = Array.from(itemRows).map(row => {
+                const inputs = row.querySelectorAll('input');
+                return {
+                    product_id: inputs[0].value,
+                    product_name: inputs[1].value,
+                    quantity: parseInt(inputs[2].value),
+                    unit_price: parseFloat(inputs[3].value)
+                };
+            });
+
+            const orderData = {
+                customer_id: document.getElementById('customer_id').value,
+                payment_method: document.getElementById('payment_method').value,
+                items: items,
+                shipping_address: {
+                    street: document.getElementById('street').value,
+                    city: document.getElementById('city').value,
+                    state: document.getElementById('state').value,
+                    postal_code: document.getElementById('postal_code').value,
+                    country: document.getElementById('country').value
+                },
+                notes: document.getElementById('notes').value
+            };
+
+            fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    showMessage('Order created successfully');
+                    this.reset();
+                    document.getElementById('orderItems').innerHTML = '';
+                    addItemRow();
+                    fetchOrders();
+                } else {
+                    showMessage(data.error || 'Error creating order', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error creating order', true);
+            });
+        });
+
+        function fetchOrders() {
+            fetch('/api/orders')
+                .then(response => response.json())
+                .then(data => {
+                    const ordersList = document.getElementById('ordersList');
+                    ordersList.innerHTML = '';
+
+                    if (data.status === "success" && data.data && data.data.length > 0) {
+                        data.data.forEach(order => {
+                            const orderDiv = document.createElement('div');
+                            orderDiv.className = 'order';
+                            
+                            let itemsHtml = '<h4>Items:</h4><ul>';
+                            order.items.forEach(item => {
+                                itemsHtml += `
+                                    <li>${item.product_name} - Quantity: ${item.quantity} - 
+                                    Price: $${item.unit_price} - Subtotal: $${item.subtotal}</li>
+                                `;
+                            });
+                            itemsHtml += '</ul>';
+
+                            orderDiv.innerHTML = `
+                                <h3>Order ID: ${order.id}</h3>
+                                <p>Status: <strong>${order.status}</strong></p>
+                                <p>Customer ID: ${order.customer_id}</p>
+                                <p>Total Amount: $${order.total_amount}</p>
+                                ${itemsHtml}
+                                <p>Created: ${new Date(order.created_at).toLocaleString()}</p>
+                                <div class="order-actions">
+                                    <button onclick="updateOrderStatus('${order.id}', 'confirmed')" 
+                                            class="status-confirmed">Confirm</button>
+                                    <button onclick="updateOrderStatus('${order.id}', 'shipped')" 
+                                            class="status-shipped">Ship</button>
+                                    <button onclick="updateOrderStatus('${order.id}', 'delivered')" 
+                                            class="status-delivered">Deliver</button>
+                                    <button onclick="updateOrderStatus('${order.id}', 'cancelled')" 
+                                            class="status-cancelled">Cancel</button>
+                                </div>
+                            `;
+                            ordersList.appendChild(orderDiv);
+                        });
+                    } else {
+                        ordersList.innerHTML = '<p>No orders found</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('Error loading orders', true);
+                });
+        }
+
+        function updateOrderStatus(orderId, status) {
+            fetch(`/api/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: status }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    showMessage(`Order status updated to: ${status}`);
+                    fetchOrders();
+                } else {
+                    showMessage(data.error || 'Error updating order status', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error updating order status', true);
+            });
+        }
+
+        // Add initial item row and load orders when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            addItemRow();
+            fetchOrders();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .notification {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .notification h2 {
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Notifications</h1>
+
+    {{if .notifications}}
+        {{range .notifications}}
+            <div class="notification">
+                <h2>Order ID: {{.OrderID}} - Customer ID: {{.CustomerID}}</h2>
+                <p><strong>Message:</strong> {{.Message}}</p>
+                <p><strong>Status:</strong> <span class="status">{{.Status}}</span></p>
+                <p><strong>Created At:</strong> {{.CreatedAt}}</p>
+                {{if .ErrorMessage}}
+                    <p class="error-message"><strong>Error Message:</strong> {{.ErrorMessage}}</p>
+                {{end}}
+            </div>
+        {{end}}
+    {{else}}
+        <p>No notifications available.</p>
+    {{end}}
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: customer-service
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-system/istio-ingressgateway
+  http:
+  - match:
+    - uri:
+        prefix: /api/customers
+    route:
+    - destination:
+        host: customer-service
+        port:
+          number: 8085
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: order-service
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-system/istio-ingressgateway
+  http:
+  - match:
+    - uri:
+        prefix: /orders
+    route:
+    - destination:
+        host: order-service
+        port:
+          number: 8087

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management</title>
+    <!-- Link the CSS file located in the 'static' folder -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Customer Management</h1>
+
+        <!-- Create New Customer Form -->
+        <div class="form-container">
+            <h2>Create New Customer</h2>
+            <form id="createCustomerForm">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required><br><br>
+
+                <label for="phone">Phone:</label>
+                <input type="text" id="phone" name="phone" required><br><br>
+
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" required><br><br>
+
+                <button type="submit">Create Customer</button>
+            </form>
+        </div>
+
+        <!-- Customers Section -->
+        <div class="customers-container">
+            <h2>Customer List</h2>
+            <button onclick="fetchCustomers()">Load Customers</button>
+
+            <table id="customersTable">
+                <thead>
+                    <tr>
+                        <th>Customer ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Customer rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        // Fetch Customers functionality
+        function fetchCustomers() {
+            fetch('/api/customers')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#customersTable tbody');
+                    tableBody.innerHTML = ''; // Clear previous results
+
+                    if (data.status === "success") {
+                        data.data.forEach(customer => {
+                            const row = document.createElement('tr');
+
+                            row.innerHTML = `
+                                <td>${customer.customer_id}</td>
+                                <td>${customer.name}</td>
+                                <td>${customer.email}</td>
+                                <td>${customer.phone}</td>
+                                <td>${customer.address}</td>
+                                <td>${new Date(customer.created_at).toLocaleDateString()}</td>
+                                <td><button onclick="viewCustomerDetails('${customer.customer_id}')">View</button></td>
+                            `;
+
+                            tableBody.appendChild(row);
+                        });
+                    } else {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td colspan="7">No customers found</td>`;
+                        tableBody.appendChild(row);
+                    }
+                })
+                .catch(error => console.error('Error fetching customers:', error));
+        }
+
+        // View Customer Details functionality (just an example of action button)
+        function viewCustomerDetails(customerID) {
+            alert(`Customer ID: ${customerID}`);
+        }
+
+        // Create New Customer functionality
+        document.getElementById('createCustomerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const customerData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                address: formData.get('address'),
+            };
+
+            fetch('/api/customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(customerData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert('Customer created successfully');
+                    fetchCustomers(); // Reload the customers list
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+
+</body>
+</html>
