@@ -256,14 +256,17 @@ kubectl port-forward svc/prometheus 9090:9090
 ```bash
 # Service Client
 cd customer-service
+nmp install
 npm test
 
 # Service Commandes
 cd order-service
+pip install requirement.txt
 python -m pytest
 
 # Service Notifications
 cd notification-service
+go mod tidy
 go test ./...
 ```
 
