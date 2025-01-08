@@ -15,40 +15,7 @@ Nous avons développé un système CRM (Customer Relationship Management) modern
 
 ## 🏗️ Architecture du Système
 
-```graph TB
-    subgraph "Kubernetes Cluster"
-        subgraph "Istio Service Mesh"
-            C[Customer Service<br>Node.js/Express<br>:8085]
-            O[Order Service<br>Python/FastAPI<br>:8087]
-            
-            C -->|Istio Routing| O
-        end
-        
-        subgraph "Dapr Runtime"
-            O -->|Pub/Sub| D[Dapr Sidecar]
-            D -->|Event| N[Notification Service<br>Golang<br>:5001]
-        end
-        
-        subgraph "Base de données"
-            DB[(MongoDB)]
-            C --> DB
-            O --> DB
-        end
-        
-        subgraph "Monitoring"
-            P[Prometheus]
-            G[Grafana]
-            Z[Zipkin]
-            
-            C -->|Metrics| P
-            O -->|Metrics| P
-            N -->|Metrics| P
-            
-            P --> G
-            D -->|Traces| Z
-        end
-    end
-```
+![Alt text](chemin/vers/image.png)
 
 Notre système est composé de trois microservices principaux interconnectés via Dapr et Istio :
 
