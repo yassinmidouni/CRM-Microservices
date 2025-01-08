@@ -15,7 +15,7 @@ Nous avons développé un système CRM (Customer Relationship Management) modern
 
 ## 🏗️ Architecture du Système
 
-graph TB
+```graph TB
     subgraph "Kubernetes Cluster"
         subgraph "Istio Service Mesh"
             C[Customer Service<br>Node.js/Express<br>:8085]
@@ -48,6 +48,7 @@ graph TB
             D -->|Traces| Z
         end
     end
+```
 
 Notre système est composé de trois microservices principaux interconnectés via Dapr et Istio :
 
