@@ -15,7 +15,7 @@ Nous avons développé un système CRM (Customer Relationship Management) modern
 
 ## 🏗️ Architecture du Système
 
-![Alt text](chemin/vers/image.png)
+![Alt text](arechitecture-crm.png)
 
 Notre système est composé de trois microservices principaux interconnectés via Dapr et Istio :
 
