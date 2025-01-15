@@ -142,7 +142,150 @@ kubectl apply -f ./deploy/destination-rule.yaml
 kubectl apply -f ./deploy/virtual-service.yaml
 ```
 
-[Rest of the documentation continues with API endpoints, monitoring setup, data structures, testing, etc., following the same structure but without academic references]
+3. Deployment Verification:
+```bash
+# Check pods
+kubectl get pods
 
-## 📜 License
-This project is open source and available under the MIT License.
+# Check services
+kubectl get svc
+
+# Check Dapr components
+dapr list -k
+```
+
+## 📡 API Endpoints
+
+### Customer Service (8085)
+```
+GET    /api/customers            - List customers
+GET    /api/customers/:id        - Get customer details
+POST   /api/customers            - Create customer
+PUT    /api/customers/:id        - Update customer
+DELETE /api/customers/:id        - Delete customer
+GET    /metrics                  - Prometheus metrics
+GET    /health                   - Health check
+```
+
+### Order Service (8087)
+```
+GET    /api/orders               - List orders
+GET    /api/orders/:id           - Get order details
+POST   /api/orders               - Create order
+PUT    /api/orders/:id/status    - Update order status
+DELETE /api/orders/:id           - Delete order
+GET    /metrics                  - Prometheus metrics
+GET    /health                   - Health check
+```
+
+### Notification Service (5001)
+```
+POST   /orders                   - Receive notifications
+GET    /health                   - Health check
+```
+
+## 📊 Monitoring and Metrics
+
+### Monitoring Tools Setup
+
+1. Deployment:
+```bash
+# Grafana and Prometheus
+kubectl apply -f ./samples/addons/grafana.yaml
+kubectl apply -f ./samples/addons/prometheus.yaml
+```
+
+2. Dashboard Access:
+```bash
+# Grafana (http://localhost:3000)
+kubectl port-forward svc/grafana 3000:3000
+
+# Prometheus (http://localhost:9090)
+kubectl port-forward svc/prometheus 9090:9090
+```
+
+### Available Metrics
+- Request counters per service
+- Inter-service call latency
+- Success/failure rates
+- Resource utilization
+- Custom Dapr metrics
+
+## 👥 Data Structures
+
+### Customer
+```json
+{
+  "id": "string",
+  "name": "string",
+  "email": "string",
+  "phone": "string",
+  "address": "string",
+  "created_at": "timestamp",
+  "updated_at": "timestamp"
+}
+```
+
+### Order
+```json
+{
+  "id": "string",
+  "customer_id": "string",
+  "items": [
+    {
+      "product_name": "string",
+      "quantity": "integer",
+      "price": "float"
+    }
+  ],
+  "total_price": "float",
+  "status": "string",
+  "created_at": "timestamp",
+  "updated_at": "timestamp"
+}
+```
+
+## 🔍 Testing
+
+### Running Tests
+```bash
+# Customer Service
+cd customer-service
+npm install
+npm test
+
+# Order Service
+cd order-service
+pip install requirement.txt
+python -m pytest
+
+# Notification Service
+cd notification-service
+go mod tidy
+go test ./...
+```
+
+### Integration Testing
+```bash
+# Test Dapr communication
+dapr run --app-id test-pub --app-port 3000 node app.js
+
+# Test Istio routing
+kubectl apply -f ./test/virtual-service-test.yaml
+```
+
+
+
+
+
+## 🤝 Contributing
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 🐛 Bug Reports
+Please use the GitHub Issues page to report any bugs or file feature requests.
